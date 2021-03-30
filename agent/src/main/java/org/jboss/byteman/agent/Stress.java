@@ -4,21 +4,41 @@ import org.jboss.byteman.rule.helper.Helper;
 
 import java.util.*;
 import java.lang.reflect.Method;
+import java.util.concurrent.locks.ReentrantLock;
 
-class RunnableDemo implements Runnable {
+interface StressRunnable extends Runnable {
+
+    public void shutdown();
+}
+
+class CPUStress implements StressRunnable {
     private Thread t;
     private String threadName;
+    private int num;
+    private boolean flag;
    
-    RunnableDemo( String name) {
+    private ReentrantLock lock = new ReentrantLock();
+    
+    CPUStress( String name, int num) {
         threadName = name;
+        this.num = num;
+        flag = true;
         Helper.verbose("Creating " +  threadName );
     }
    
-    boolean flag = true;
     public void run() {
         Helper.verbose("Running " +  threadName );
-        while (flag) {            
+        
+        while (true) {
+            lock.lock();
+            boolean exit = !flag; 
+            lock.unlock();
+            if (exit) {
+                break;
+            }
         }
+
+        Helper.verbose("Exiting " +  threadName );
     }
    
     public void start () {
@@ -29,4 +49,11 @@ class RunnableDemo implements Runnable {
             t.start ();
         }
    }
+
+    public void shutdown() {
+        Helper.verbose("Shutdown " +  threadName );
+        lock.lock();
+        flag = false;
+        lock.unlock();
+    }
 }

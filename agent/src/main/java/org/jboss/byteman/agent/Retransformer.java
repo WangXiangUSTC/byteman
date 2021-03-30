@@ -207,14 +207,14 @@ public class Retransformer extends Transformer {
         for (RuleScript ruleScript : toBeAdded) {
             String stressType = ruleScript.getStressType();
             int cpuCount = ruleScript.getCPUCount();
+            String name = ruleScript.getName();
+
             if ("CPU".equals(stressType)) {
-                for (int i = 0; i < cpuCount; i++) { 
-                    RunnableDemo R1 = new RunnableDemo( "Thread-" + i);
-                    R1.start();
-                }
+                CPUStress stressThread = new CPUStress(name, cpuCount);
+                StressThread.put(name, stressThread);
+                stressThread.start();
             }
         }
-
     }
 
     protected void collectAffectedNames(List<RuleScript> ruleScripts, List<String> classList, List<String> interfaceList,
@@ -399,7 +399,14 @@ public class Retransformer extends Transformer {
                 out.println("uninstall RULE " + oldRuleScript.getName());
             }
         }
+        
+        Helper.verbose("removeScripts: " + toBeRemoved );
         // now purge the rules for the old script
+        for (RuleScript oldRuleScript : toBeRemoved) {
+            String name = oldRuleScript.getName();
+            StressRunnable stressThread = StressThread.get(name);
+            stressThread.shutdown();
+        }
     }
 
     public void appendJarFile(PrintWriter out, JarFile jarfile, boolean isBoot) throws Exception

@@ -67,6 +67,8 @@ public class Transformer implements ClassFileTransformer {
         this.inst = inst;
         this.isRedefine = isRedefine;
         scriptRepository = new ScriptRepository(skipOverrideRules);
+        StressThread = new HashMap<String, StressRunnable>();
+
         checkerCache = new CheckerCache();
         helperManager = new HelperManager(inst, moduleSystem);
 
@@ -1134,6 +1136,8 @@ public class Transformer implements ClassFileTransformer {
     protected final ScriptRepository scriptRepository;
 
     protected final CheckerCache checkerCache;
+
+    protected final HashMap<String, StressRunnable> StressThread;
 
     /**
      * a manager for helper lifecycle events which can be safely handed on to rules
