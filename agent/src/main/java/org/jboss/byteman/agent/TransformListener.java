@@ -240,10 +240,6 @@ public class TransformListener extends Thread
                 listSystemProperties(in, out);
             } else if (line.equals("SETSYSPROPS")) {
                 setSystemProperties(in, out);
-            } else if (line.equals("CPU")) {
-                
-            } else if (line.equals("MEMORY")) {
-                
             } else {
                 out.println("ERROR");
                 out.println("Unexpected command " + line);
@@ -337,9 +333,6 @@ public class TransformListener extends Thread
             scriptNames.add(scriptName);
 
             line = in.readLine();
-
-            // print script
-            //System.out.println("handleScripts: " + line);
         }
 
         if ((doDelete && !line.equals("ENDDELETE")) ||
