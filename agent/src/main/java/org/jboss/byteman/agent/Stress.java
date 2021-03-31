@@ -3,6 +3,7 @@ package org.jboss.byteman.agent;
 import org.jboss.byteman.rule.helper.Helper;
 
 import java.util.*;
+import java.nio.ByteBuffer;
 import java.lang.reflect.Method;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -43,6 +44,26 @@ class CPUStress implements Stress {
     }
 }
 
+class MemoryStress implements Stress {
+    private String name;
+    private int size;
+    private MemoryStressThread thread;
+
+    MemoryStress(String name, int size) {
+        this.name = name;
+        this.size = size;
+    }
+
+    public void load() {
+        thread = new MemoryStressThread(name, size);
+        thread.start();
+    }
+
+    public void quit() {
+        thread.shutdown();
+    }
+}
+
 interface StressRunnable extends Runnable {
 
     public void shutdown();
@@ -70,6 +91,64 @@ class CPUStressThread implements StressRunnable {
             lock.unlock();
             if (exit) {
                 break;
+            }
+        }
+
+        Helper.verbose("Exiting " +  threadName );
+    }
+   
+    public void start () {
+        Helper.verbose("Starting " +  threadName );
+    
+        if (t == null) {
+            t = new Thread (this, threadName);
+            t.start ();
+        }
+   }
+
+    public void shutdown() {
+        Helper.verbose("Shutdown " +  threadName );
+        lock.lock();
+        flag = false;
+        lock.unlock();
+    }
+}
+
+class MemoryStressThread implements StressRunnable {
+    private Thread t;
+    private String threadName;
+    private int size;
+    private boolean flag;
+
+    private ReentrantLock lock = new ReentrantLock();
+    
+    MemoryStressThread(String name, int size) {
+        threadName = name;
+        this.size = size;
+        flag = true;
+        Helper.verbose("Creating " +  threadName );
+    }
+
+    public void run() {
+        Helper.verbose("Running " +  threadName );
+        
+        ByteBuffer data = ByteBuffer.allocateDirect(size*1024*1024);
+
+        while (true) {
+            lock.lock();
+            boolean exit = !flag;
+            lock.unlock();
+            if (exit) {
+                Helper.verbose("reset data");
+                data.clear();
+                data = null;
+                System.gc(); 
+                break;
+            }
+            try {
+                Thread.sleep(1000);  
+            } catch(Exception e) {
+                Helper.err("sleep" + e);
             }
         }
 

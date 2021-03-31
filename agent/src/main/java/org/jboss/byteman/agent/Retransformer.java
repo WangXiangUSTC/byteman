@@ -208,9 +208,14 @@ public class Retransformer extends Transformer {
             String stressType = ruleScript.getStressType();
             int cpuCount = ruleScript.getCPUCount();
             String name = ruleScript.getName();
+            int memorySize = ruleScript.getMemorySize();
 
             if ("CPU".equals(stressType)) {
                 CPUStress stress = new CPUStress(name, cpuCount);
+                stresses.put(name, stress);
+                stress.load();
+            } else if ("MEMORY".equals(stressType)) {
+                MemoryStress stress = new MemoryStress(name, memorySize);
                 stresses.put(name, stress);
                 stress.load();
             }
@@ -406,6 +411,7 @@ public class Retransformer extends Transformer {
             String name = oldRuleScript.getName();
             Stress stress = stresses.get(name);
             stress.quit();
+            stresses.remove(name);
         }
     }
 
