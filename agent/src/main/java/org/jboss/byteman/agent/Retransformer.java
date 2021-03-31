@@ -405,9 +405,13 @@ public class Retransformer extends Transformer {
             }
         }
         
-        Helper.verbose("removeScripts: " + toBeRemoved );
         // now purge the rules for the old script
         for (RuleScript oldRuleScript : toBeRemoved) {
+            String stressType = oldRuleScript.getStressType();
+            if (stressType == null || "".equals(stressType)) {
+                continue;
+            }
+
             String name = oldRuleScript.getName();
             Stress stress = stresses.get(name);
             stress.quit();
