@@ -210,9 +210,9 @@ public class Retransformer extends Transformer {
             String name = ruleScript.getName();
 
             if ("CPU".equals(stressType)) {
-                CPUStress stressThread = new CPUStress(name, cpuCount);
-                StressThread.put(name, stressThread);
-                stressThread.start();
+                CPUStress stress = new CPUStress(name, cpuCount);
+                stresses.put(name, stress);
+                stress.load();
             }
         }
     }
@@ -404,8 +404,8 @@ public class Retransformer extends Transformer {
         // now purge the rules for the old script
         for (RuleScript oldRuleScript : toBeRemoved) {
             String name = oldRuleScript.getName();
-            StressRunnable stressThread = StressThread.get(name);
-            stressThread.shutdown();
+            Stress stress = stresses.get(name);
+            stress.quit();
         }
     }
 
