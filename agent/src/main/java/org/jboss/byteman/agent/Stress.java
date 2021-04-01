@@ -121,7 +121,7 @@ class MemoryStressThread implements StressRunnable {
     private boolean flag;
 
     private ReentrantLock lock = new ReentrantLock();
-    
+
     MemoryStressThread(String name, int size) {
         threadName = name;
         this.size = size;
@@ -131,24 +131,32 @@ class MemoryStressThread implements StressRunnable {
 
     public void run() {
         Helper.verbose("Running " +  threadName );
+        ByteBuffer stableSizeData;
+        ArrayList<String> increaseSizeData = new ArrayList<String>();
+        boolean oom = false;
         
-        ByteBuffer data = ByteBuffer.allocateDirect(size*1024*1024);
+        if (size > 0) {
+            stableSizeData = ByteBuffer.allocateDirect(size*1024*1024);
+        }
 
         while (true) {
             lock.lock();
             boolean exit = !flag;
             lock.unlock();
             if (exit) {
-                Helper.verbose("reset data");
-                data.clear();
-                data = null;
+                stableSizeData = null;
+                increaseSizeData = null;
+
                 System.gc(); 
                 break;
             }
-            try {
-                Thread.sleep(1000);  
-            } catch(Exception e) {
-                Helper.err("sleep" + e);
+            if (size < 0 && !oom ) {
+                try {
+                    increaseSizeData.add("123456");
+                } catch (OutOfMemoryError e) {
+                    oom = true;
+                    Helper.verbose("exception: " + e);
+                }
             }
         }
 
