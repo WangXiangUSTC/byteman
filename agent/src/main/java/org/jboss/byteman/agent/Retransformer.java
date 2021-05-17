@@ -31,6 +31,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
+import java.util.Map;
+import java.lang.reflect.Field;
 
 import org.jboss.byteman.modules.ModuleSystem;
 import org.jboss.byteman.rule.helper.Helper;
@@ -374,6 +376,11 @@ public class Retransformer extends Transformer {
             oldRuleScript.setDeleted();
             // now deal with uninstall, allowing for possible reinstall
             RuleScript newRuleScript = scriptRepository.scriptForRuleName(oldRuleScript.getName());
+
+            // if the rule is for thread pool in org.jboss.byteman.sample.helper.ThreadMonitorHelper, 
+            // set the environment variable THREAD_POOL_INJECT_STOP=true, so that the thread created by byteman can stop
+            setEnv("THREAD_POOL_INJECT_STOP", "true");
+
             // new script may not exist!
             if (newRuleScript != null) {
                 synchronized (newRuleScript) {
@@ -460,5 +467,18 @@ public class Retransformer extends Transformer {
      */
     public Set<String> getLoadedSystemJars() {
         return new HashSet<String>(sysJars); // returns a copy
+    }
+
+    public static void setEnv(String key, String value) {
+        try {
+            Map<String, String> env = System.getenv();
+            Class<?> cl = env.getClass();
+            Field field = cl.getDeclaredField("m");
+            field.setAccessible(true);
+            Map<String, String> writableEnv = (Map<String, String>) field.get(env);
+            writableEnv.put(key, value);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to set environment variable", e);
+        }
     }
 }
