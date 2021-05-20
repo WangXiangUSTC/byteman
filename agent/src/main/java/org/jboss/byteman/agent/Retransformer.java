@@ -36,6 +36,7 @@ import java.lang.reflect.Field;
 
 import org.jboss.byteman.modules.ModuleSystem;
 import org.jboss.byteman.rule.helper.Helper;
+import org.jboss.byteman.rule.helper.ThreadTask;
 
 /**
  * byte code transformer used to introduce byteman events into JBoss code
@@ -377,9 +378,13 @@ public class Retransformer extends Transformer {
             // now deal with uninstall, allowing for possible reinstall
             RuleScript newRuleScript = scriptRepository.scriptForRuleName(oldRuleScript.getName());
 
-            // if the rule is for thread pool in org.jboss.byteman.sample.helper.ThreadMonitorHelper, 
+            // if the rule is for thread pool in org.jboss.byteman.rule.helper.ThreadPoolHelper, 
             // set the environment variable THREAD_POOL_INJECT_STOP=true, so that the thread created by byteman can stop
-            setEnv("THREAD_POOL_INJECT_STOP", "true");
+            String helper = oldRuleScript.getTargetHelper();
+            if (helper.contains("ThreadPoolHelper")) {
+                System.out.println("set THREAD_POOL_INJECT_STOP to true");
+                ThreadTask.setStop(true);
+            }
 
             // new script may not exist!
             if (newRuleScript != null) {
