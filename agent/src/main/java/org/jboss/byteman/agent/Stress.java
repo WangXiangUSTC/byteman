@@ -196,15 +196,4 @@ class MemoryStressThread implements StressRunnable {
         flag = false;
         lock.unlock();
     }
-
-    public void loop() {
-        lock.lock();
-        boolean exit = !flag;
-        lock.unlock();
-
-        if (exit) {
-            return;
-        }
-        this.loop();
-    }
 }
