@@ -128,7 +128,6 @@ class MemoryStressThread implements StressRunnable {
 
     MemoryStressThread(String name, String type) {
         threadName = name;
-        //this.size = size;
         this.type = type;
         flag = true;
         Helper.verbose("Creating " +  threadName + ", type " + type);
@@ -175,13 +174,6 @@ class MemoryStressThread implements StressRunnable {
                         Helper.verbose("exception: " + e);
                     }
 
-                } else if (this.type.equals("stackOverFlow")) {
-                    try {
-                        this.loop();
-                    } catch (StackOverflowError e) {
-                        oom = true;
-                        Helper.verbose("exception: " + e);
-                    }
                 }
             }
         }
