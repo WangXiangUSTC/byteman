@@ -16,10 +16,10 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
-      - name: Setup python3
-        run: |
-          yum install -y python3
-          alias python=python3
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7' # Version range or exact version of a Python version to use, using SemVer's version range syntax
 
       - name: Configure awscli
         run: |
