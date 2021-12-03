@@ -17,30 +17,5 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
 
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7' # Version range or exact version of a Python version to use, using SemVer's version range syntax
-
-      - name: Configure awscli
-        run: |
-          pip3 install awscli
-          printf "%s\n" ${{ secrets.AWS_ACCESS_KEY }} ${{ secrets.AWS_SECRET_KEY }} ${{ secrets.AWS_REGION }} "json" | aws configure
-
       - name: Build with Maven
-        run: mvn package -Dmaven.test.skip=true
-      - name: Check target
-        run: ls -l ./target
-      - name: Package and Upload
-        run: |
-          package_dir=byteman-${GIT_TAG}-linux-amd64
-          mkdir ${package_dir}
-          mkdir ${package_dir}/lib
-          cp agent/target/byteman-agent-4.0.14.jar ${package_dir}/lib/byteman.jar
-          cp install/target/byteman-install-4.0.14.jar ${package_dir}/lib/byteman-install.jar
-          cp submit/target/byteman-submit-4.0.14.jar ${package_dir}/lib/byteman-submit.jar
-          cp -r bin ${package_dir}/bin
-          ls -l ${package_dir}
-          ls -l ${package_dir}/lib
-          GIT_TAG=latest
-          tar czvf ${package_dir}.tar.gz ${package_dir}
-          aws s3 cp ${package_dir}.tar.gz ${{ secrets.AWS_BUCKET_NAME }}/${package_dir}.tar.gz
+        run: mvn package

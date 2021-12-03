@@ -14,10 +14,10 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
-      - name: Setup python3
-        run: |
-          yum install -y python3
-          alias python=python3
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
 
       - name: Configure awscli
         run: |
@@ -26,15 +26,16 @@ jobs:
 
       - name: Build with Maven
         run: mvn package -Dmaven.test.skip=true
-      - name: package
+
+      - name: Package and Upload
         run: |
-          mkdir byteman
-          mkdir byteman/lib
-          cp agent/target/byteman-agent-4.0.14.jar byteman/lib/byteman.jar
-          cp install/target/byteman-install-4.0.14.jar byteman/lib/byteman-install.jar
-          cp submit/target/byteman-submit-4.0.14.jar byteman/lib/byteman-submit.jar
-          cp -r bin byteman/bin
-          ls -l byteman
           GIT_TAG=${GITHUB_REF##*/}
-          tar czvf byteman-${GIT_TAG}-linux-amd64.tar.gz byteman
-          aws s3 cp byteman-${GIT_TAG}-linux-amd64.tar.gz ${{ secrets.AWS_BUCKET_NAME }}/byteman-${GIT_TAG}-linux-amd64.tar.gz
+          package_dir=byteman-${GIT_TAG}-linux-amd64
+          mkdir ${package_dir}
+          mkdir ${package_dir}/lib
+          cp agent/target/byteman-agent-4.0.14.jar ${package_dir}/lib/byteman.jar
+          cp install/target/byteman-install-4.0.14.jar ${package_dir}/lib/byteman-install.jar
+          cp submit/target/byteman-submit-4.0.14.jar ${package_dir}/lib/byteman-submit.jar
+          cp -r bin ${package_dir}/bin
+          tar czvf ${package_dir}.tar.gz ${package_dir}
+          aws s3 cp ${package_dir}.tar.gz ${{ secrets.AWS_BUCKET_NAME }}/${package_dir}.tar.gz
